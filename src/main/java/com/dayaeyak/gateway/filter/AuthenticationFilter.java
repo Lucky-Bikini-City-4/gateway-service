@@ -2,12 +2,14 @@ package com.dayaeyak.gateway.filter;
 
 import com.dayaeyak.gateway.constraints.HeaderConstraints;
 import com.dayaeyak.gateway.dto.RequestUserInfo;
+import com.dayaeyak.gateway.exception.GatewayException;
+import com.dayaeyak.gateway.exception.GatewayExceptionType;
 import com.dayaeyak.gateway.util.JwtProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
-import org.springframework.http.HttpStatus;
+import org.springframework.core.Ordered;
 import org.springframework.http.server.PathContainer;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
@@ -22,7 +24,7 @@ import java.util.List;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class AuthenticationFilter implements GlobalFilter {
+public class AuthenticationFilter implements GlobalFilter, Ordered {
 
     private final JwtProvider jwtProvider;
 
@@ -43,9 +45,7 @@ public class AuthenticationFilter implements GlobalFilter {
         String token = extractToken(request);
 
         if (!StringUtils.hasText(token) || !jwtProvider.validateAccessToken(token)) {
-            log.warn("Invalid access token");
-            exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
-            return exchange.getResponse().setComplete();
+            return Mono.error(() -> new GatewayException(GatewayExceptionType.INVALID_ACCESS_TOKEN));
         }
 
         RequestUserInfo userInfo = jwtProvider.getUserInfoFromToken(token);
@@ -75,5 +75,10 @@ public class AuthenticationFilter implements GlobalFilter {
         }
 
         return null;
+    }
+
+    @Override
+    public int getOrder() {
+        return 1;
     }
 }
