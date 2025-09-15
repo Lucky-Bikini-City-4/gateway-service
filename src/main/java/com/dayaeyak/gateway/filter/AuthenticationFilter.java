@@ -33,7 +33,8 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
 
     // white list
     private final List<PathPattern> whiteList = List.of(
-            new PathPatternParser().parse("/auth/**")
+            new PathPatternParser().parse("/auth/**"),
+            new PathPatternParser().parse("/searches/**")
     );
 
     @Override
