@@ -1,6 +1,6 @@
 package com.dayaeyak.gateway.util;
 
-import com.dayaeyak.gateway.dto.RequestUserInfo;
+import com.dayaeyak.gateway.dto.RequestUserInfoDto;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -43,10 +43,10 @@ public class JwtProvider {
         return false;
     }
 
-    public RequestUserInfo getUserInfoFromToken(String token) {
+    public RequestUserInfoDto getUserInfoFromToken(String token) {
         Claims claims = parseClaims(token, accessSecretKey);
 
-        return RequestUserInfo.from(claims);
+        return RequestUserInfoDto.from(claims);
     }
 
     private Claims parseClaims(String token, SecretKey secretKey) {
