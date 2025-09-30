@@ -13,10 +13,4 @@ public record ExceptionResponseDto(
 
         String requestPath
 ) {
-
-    @Override
-    public String toString() {
-        return String.format("[%s %s][%s] %s", method, requestPath, status, message);
-
-    }
 }
