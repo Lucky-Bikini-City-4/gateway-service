@@ -3,7 +3,7 @@ spring:
     name: gateway-service
 
   profiles:
-    active: dev
+    active: local
     group:
       local: dev, service, jwt
       deploy: prod, service, jwt
