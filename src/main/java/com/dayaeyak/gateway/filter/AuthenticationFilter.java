@@ -5,6 +5,7 @@ import com.dayaeyak.gateway.dto.RequestUserInfoDto;
 import com.dayaeyak.gateway.exception.GatewayException;
 import com.dayaeyak.gateway.exception.GatewayExceptionType;
 import com.dayaeyak.gateway.util.JwtProvider;
+import com.dayaeyak.gateway.util.LogUtil;
 import com.dayaeyak.gateway.util.UserWebClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,7 +16,6 @@ import org.springframework.http.server.PathContainer;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
-import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.util.pattern.PathPattern;
 import org.springframework.web.util.pattern.PathPatternParser;
@@ -39,16 +39,22 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
+        String filter = this.getClass().getSimpleName();
         ServerHttpRequest request = exchange.getRequest();
         String path = request.getPath().value();
+        String method = request.getMethod().name();
+
+        LogUtil.info(method, path, filter, "start");
 
         if (isWhiteListed(path)) {
+            LogUtil.info(method, path, filter, "pass_whiteList");
             return chain.filter(exchange);
         }
 
         String token = extractToken(request);
 
         if (!StringUtils.hasText(token) || !jwtProvider.validateAccessToken(token)) {
+            LogUtil.warn(method, path, filter, "invalid_token");
             return Mono.error(() -> new GatewayException(GatewayExceptionType.INVALID_ACCESS_TOKEN));
         }
 
@@ -64,8 +70,7 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
                                         })
                                 )
                                 .build()
-                ))
-                ;
+                ));
     }
 
     private Mono<RequestUserInfoDto> callUserService(String userId) {
